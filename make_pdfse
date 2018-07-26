@@ -1,0 +1,3 @@
+echo -e "Compiling...\c"
+g++ ./src/pdfse.cpp ./src/getopt_pp.cpp -lpodofo -lfreetype -lfontconfig -ljpeg -lz -o pdfse
+echo "Done."
