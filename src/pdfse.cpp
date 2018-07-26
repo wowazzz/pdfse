@@ -108,8 +108,10 @@ bool MustBeRemoved( string rawSpotName, vector<string> & spotsToRemove )
     vector<string>::iterator it = spotsToRemove.begin();
     while ( it != spotsToRemove.end() )
     {
+        string tempSpot = *it;
+        std::transform(tempSpot.begin(), tempSpot.end(), tempSpot.begin(), ::tolower);
 //cout << rawSpotName << " " << *it << " !!!!!" << endl;
-        if ( spotName.find(*it) != std::string::npos ) return true;
+        if ( spotName.find(tempSpot) != std::string::npos ) return true;
         ++it;
     }
     return false;
@@ -326,7 +328,7 @@ int main( int argc, char* argv[] )
         if ( not ends_with(*iter, endPdf) )
         {
             tempSpot = *iter;
-            std::transform(tempSpot.begin(), tempSpot.end(), tempSpot.begin(), ::tolower);
+            //std::transform(tempSpot.begin(), tempSpot.end(), tempSpot.begin(), ::tolower);
             spotsRemove.push_back(tempSpot);
         }
         ++iter;
