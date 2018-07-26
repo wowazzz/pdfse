@@ -21,7 +21,7 @@ or install PoDoFo from source (current version: 0.9.6):
 	mkdir podofo-build
 	svn checkout https://svn.code.sf.net/p/podofo/code/podofo/trunk/ podofo-src
 	cd podofo-build
-	cmake -G "Unix Makefiles" /***-DCMAKE_INSTALL_PREFIX="$HOME/podofo"***/ ../podofo-src
+	cmake -G "Unix Makefiles" ../podofo-src
 	make
 	sudo make install
 	
