@@ -17,9 +17,9 @@ const PdfName NONE_COLOR("None");
 void HelpMsg()
 {
     cout << endl << "Usage:"
-		 << endl << " pdfse input_file.pdf [-options] Spot1 [ ... SpotN ]"
-		 << endl << endl
-		 << "Options:"
+	 << endl << " pdfse input_file.pdf [-options] Spot1 [ ... SpotN ]"
+	 << endl << endl
+	 << "Options:"
          << endl << "  -d, --debug    enable Debug mode."
          << endl << endl;
 }
@@ -124,89 +124,89 @@ void LeaveOnlySpots( const char *filename, const char *output )
         PdfPage* pPage = pdf.GetPage( page_num );
         PODOFO_RAISE_LOGIC_IF( !pPage, "Got null page pointer within valid page range" );
 
-   		EPdfContentsType t;
+	EPdfContentsType t;
     	const char* pszKeyword;
     	PdfVariant var;
     	bool bReadToken;
 
     	PdfContentsTokenizer tokenizer( pPage );
     	vector<PdfVariant> args;
-	    PdfRefCountedBuffer buffer;
+	PdfRefCountedBuffer buffer;
     	PdfOutputDevice device( &buffer );
 
-	    bool is_cmyk_now = true;
+	bool is_cmyk_now = true;
     	bool is_inside_path = false;
 
     	while( (bReadToken = tokenizer.ReadNext(t, pszKeyword, var)) )
     	{
-			if (t == ePdfContentsType_Variant)
-			{
-				args.push_back(var);
-			}
-			else if (t == ePdfContentsType_ImageData) 
-			{
-				args.push_back(var);
-			}
-			else if (t == ePdfContentsType_Keyword)
-			{
-				if ((strcmp(pszKeyword, "cs") == 0) || (strcmp(pszKeyword, "CS") == 0) ||
-					(strcmp(pszKeyword, "scn") == 0) || (strcmp(pszKeyword, "SCN") == 0) ||
-					(strcmp(pszKeyword, "sc") == 0) || (strcmp(pszKeyword, "SC") == 0)
-					)
-				{
-					// the spots
-					is_cmyk_now = false;
-					WriteArgumentsAndKeyword(args, pszKeyword, device);
-					continue;
-				}
-				if ((strcmp(pszKeyword, "k") == 0) || (strcmp(pszKeyword, "K") == 0))
-				{
-					// cmyk vector graphics
-					is_cmyk_now = true;
-					WriteArgumentsAndKeyword(args, pszKeyword, device);
-					continue;
-				}
-
-				// inside path checking
-				if (strcmp(pszKeyword, "m") == 0)
-				{
-					is_inside_path = true;
-				}
-
-				bool need_del = false;
-				if (is_cmyk_now && is_inside_path)
-					need_del = true;
-				
-				if ((strcmp(pszKeyword, "S") == 0) ||
-					(strcmp(pszKeyword, "s") == 0) ||
-					(strcmp(pszKeyword, "f") == 0) ||
-					(strcmp(pszKeyword, "F") == 0) ||
-					(strcmp(pszKeyword, "f*") == 0) ||
-					(strcmp(pszKeyword, "B") == 0) ||
-					(strcmp(pszKeyword, "B*") == 0) ||
-					(strcmp(pszKeyword, "b") == 0) ||
-					(strcmp(pszKeyword, "b*") == 0) ||
-					(strcmp(pszKeyword, "n") == 0))
-				{
-					is_inside_path = false;
-				}
-				if (need_del)
-				{
-					pszKeyword = "\0";
-					args.clear();
-					WriteArgumentsAndKeyword(args, pszKeyword, device);
-					continue;
-				}
-
-				// for all others
-				WriteArgumentsAndKeyword( args, pszKeyword, device );
-			}
+	    if (t == ePdfContentsType_Variant)
+	    {
+		args.push_back(var);
+	    }
+	    else if (t == ePdfContentsType_ImageData) 
+	    {
+		args.push_back(var);
+	    }
+	    else if (t == ePdfContentsType_Keyword)
+	    {
+		if ((strcmp(pszKeyword, "cs") == 0) || (strcmp(pszKeyword, "CS") == 0) ||
+			(strcmp(pszKeyword, "scn") == 0) || (strcmp(pszKeyword, "SCN") == 0) ||
+			(strcmp(pszKeyword, "sc") == 0) || (strcmp(pszKeyword, "SC") == 0)
+			)
+		{
+		    // the spots
+		    is_cmyk_now = false;
+		    WriteArgumentsAndKeyword(args, pszKeyword, device);
+		    continue;
+		}
+		if ((strcmp(pszKeyword, "k") == 0) || (strcmp(pszKeyword, "K") == 0))
+		{
+		    // cmyk vector graphics
+		    is_cmyk_now = true;
+		    WriteArgumentsAndKeyword(args, pszKeyword, device);
+		    continue;
 		}
 
-		// Write arguments if there are any left
-		WriteArgumentsAndKeyword( args, NULL, device );
-		// Set new contents stream
-		pPage->GetContentsForAppending()->GetStream()->Set( buffer.GetBuffer(), buffer.GetSize() );
+		// inside path checking
+		if (strcmp(pszKeyword, "m") == 0)
+		{
+		    is_inside_path = true;
+		}
+
+		bool need_del = false;
+		if (is_cmyk_now && is_inside_path)
+		    need_del = true;
+		
+		if ((strcmp(pszKeyword, "S") == 0) ||
+		    (strcmp(pszKeyword, "s") == 0) ||
+		    (strcmp(pszKeyword, "f") == 0) ||
+		    (strcmp(pszKeyword, "F") == 0) ||
+		    (strcmp(pszKeyword, "f*") == 0) ||
+		    (strcmp(pszKeyword, "B") == 0) ||
+		    (strcmp(pszKeyword, "B*") == 0) ||
+		    (strcmp(pszKeyword, "b") == 0) ||
+		    (strcmp(pszKeyword, "b*") == 0) ||
+		    (strcmp(pszKeyword, "n") == 0))
+		{
+		    is_inside_path = false;
+		}
+		if (need_del)
+		{
+		    pszKeyword = "\0";
+		    args.clear();
+		    WriteArgumentsAndKeyword(args, pszKeyword, device);
+		    continue;
+		}
+
+		// for all others
+		WriteArgumentsAndKeyword( args, pszKeyword, device );
+	    }
+	}
+
+	// Write arguments if there are any left
+	WriteArgumentsAndKeyword( args, NULL, device );
+	// Set new contents stream
+	pPage->GetContentsForAppending()->GetStream()->Set( buffer.GetBuffer(), buffer.GetSize() );
 
     }
 
@@ -215,10 +215,10 @@ void LeaveOnlySpots( const char *filename, const char *output )
 
 void RemoveAllSpots( const char *filename, vector<string> &spotsRemove )
 {
-	// load input PDF file
+    // load input PDF file
     PdfMemDocument pdf(filename);
 
-	PdfVecObjects pdfObjs = pdf.GetObjects();
+    PdfVecObjects pdfObjs = pdf.GetObjects();
     vector<PdfReference> colorRefs = GetColorRefs(pdf);
 
     // iterate through all color arrays
@@ -238,7 +238,7 @@ void RemoveAllSpots( const char *filename, vector<string> &spotsRemove )
                  && MustBeRemoved( colorArray[1].GetName().GetEscapedName(), 
                                     spotsRemove ) )
             {
-				//cout << "  " << colorArray[1].GetName().GetEscapedName() << endl;
+		//cout << "  " << colorArray[1].GetName().GetEscapedName() << endl;
                 colorArray[1] = NONE_COLOR;
                 (*colorArrayObject) = PdfObject (colorArrayObject->Reference(), colorArray );
             }
@@ -253,10 +253,10 @@ void RemoveAllSpots( const char *filename, vector<string> &spotsRemove )
 
 void MakeSpotFile( const char *filename, string spotname )
 {
-	// load input PDF file
+    // load input PDF file
     PdfMemDocument pdf(filename);
 
-	PdfVecObjects pdfObjs = pdf.GetObjects();
+    PdfVecObjects pdfObjs = pdf.GetObjects();
     vector<PdfReference> colorRefs = GetColorRefs(pdf);
 
     // iterate through all color arrays
@@ -275,7 +275,7 @@ void MakeSpotFile( const char *filename, string spotname )
                  && colorArray[1].IsName() 
                  && ( strcasecmp( colorArray[1].GetName().GetEscapedName().c_str(), spotname.c_str() ) != 0  ))
             {
-				cout << "  " << colorArray[1].GetName().GetEscapedName() << endl;
+		cout << "  " << colorArray[1].GetName().GetEscapedName() << endl;
                 colorArray[1] = NONE_COLOR;
                 (*colorArrayObject) = PdfObject (colorArrayObject->Reference(), colorArray );
             }
@@ -284,7 +284,7 @@ void MakeSpotFile( const char *filename, string spotname )
     }
 
     string tmp_spot = filename;
-	spotname = "." + spotname + ".pdf";
+    spotname = "." + spotname + ".pdf";
     tmp_spot.replace(tmp_spot.rfind(".spots.pdf"), sizeof(".spots.pdf"), spotname.c_str());
     pdf.Write(tmp_spot.c_str());
 }
@@ -296,28 +296,28 @@ int main( int argc, char* argv[] )
     // must be at least one Spot
     if (argc < 3)
     {
-		HelpMsg();
-		return 0;
+	HelpMsg();
+	return 0;
     }
 
     // get command line input parameters
     vector<string> options;
     cmd >> GetOpt::GlobalOption(options);
 	
-	// logging
-	bool is_log = false;
-	if ( cmd >> GetOpt::OptionPresent('d', "debug"))
-		is_log = true;
-	PdfError::EnableDebug(is_log);
-	PdfError::EnableLogging(is_log);
+    // logging
+    bool is_log = false;
+    if ( cmd >> GetOpt::OptionPresent('d', "debug"))
+	is_log = true;
+    PdfError::EnableDebug(is_log);
+    PdfError::EnableLogging(is_log);
 
     // STEP 1. Prepare file "<*>.spots.pdf" for next work 
-	cout << "Preparing..." << endl;
+    cout << "Preparing..." << endl;
     string tmp_spots = options[0].c_str();
     tmp_spots.replace(tmp_spots.rfind(".pdf"), sizeof(".pdf"), ".spots.pdf");
     LeaveOnlySpots(options[0].c_str(), tmp_spots.c_str());
 
-	vector<string> spotsRemove;
+    vector<string> spotsRemove;
     string tempSpot, endPdf = ".pdf";
     vector<string>::iterator iter = options.begin();
     while ( iter != options.end() )
@@ -331,21 +331,21 @@ int main( int argc, char* argv[] )
         ++iter;
     }
 
-	// STEP 2. Create "<*>.remaining.pdf" file
-	cout << "Creating remaining file..." << endl;
-	RemoveAllSpots(options[0].c_str(), spotsRemove);
+    // STEP 2. Create "<*>.remaining.pdf" file
+    cout << "Creating remaining file..." << endl;
+    RemoveAllSpots(options[0].c_str(), spotsRemove);
 
-	// STEP 3. Create all Spots files
-	cout << "Creating files for selected spots..." << endl;
+    // STEP 3. Create all Spots files
+    cout << "Creating files for selected spots..." << endl;
     iter = spotsRemove.begin();
     while ( iter != spotsRemove.end() )
     {
-		MakeSpotFile(tmp_spots.c_str(), *iter);
+	MakeSpotFile(tmp_spots.c_str(), *iter);
         ++iter;
     }
 
-	remove(tmp_spots.c_str());
-	cout << "Done." << endl;
+    remove(tmp_spots.c_str());
+    cout << "Done." << endl;
 
     return 0;
 }
