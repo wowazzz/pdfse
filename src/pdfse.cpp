@@ -139,16 +139,27 @@ void RemoveObjectsExcept( const char *filename, struct SPOT *sp, vector<SPOT> *s
 	    }
 	    else if (t == ePdfContentsType_Keyword)
 	    {
+		if ( (strcmp(pszKeyword, "Do") == 0) && (spotList == NULL) ) // removing raster objects
+		{
+		    pszKeyword = "\0";
+		    args.clear();
+		    WriteArgumentsAndKeyword(args, pszKeyword, device);
+		    continue;
+		}
 		if ((strcmp(pszKeyword, "cs") == 0) || (strcmp(pszKeyword, "CS") == 0) ||
 			(strcmp(pszKeyword, "scn") == 0) || (strcmp(pszKeyword, "SCN") == 0) ||
 			(strcmp(pszKeyword, "sc") == 0) || (strcmp(pszKeyword, "SC") == 0)
 			)
 		{
 		    // the spots
+		    //cout << pszKeyword << endl;
         	    if ((strcmp(pszKeyword, "cs") == 0) || (strcmp(pszKeyword, "CS") == 0))
         	    {
             		if (args[0].IsName())
-                	    cur_cs_name = args[0].GetName().GetEscapedName();
+                	{
+			    cur_cs_name = args[0].GetName().GetEscapedName();
+			    //cout << cur_cs_name << endl;
+			}
             		if (spotList == NULL)
                 	    is_need_del = (cur_cs_name.compare(sp->csId) != 0);
             		else // sp == NULL
@@ -176,7 +187,7 @@ void RemoveObjectsExcept( const char *filename, struct SPOT *sp, vector<SPOT> *s
 		}
 
 		// inside path checking
-		if (strcmp(pszKeyword, "m") == 0)
+		if ( (strcmp(pszKeyword, "m") == 0) || (strcmp(pszKeyword, "re") == 0) )
 		{
 		    is_inside_path = true;
 		}
