@@ -339,16 +339,12 @@ int main( int argc, char* argv[] )
             // searching
             for ( struct SPOT sp : spotsList )
             {
-cout << sp.name << " - " << tempSpot;                
                 if ( caseInsensitiveStringCompare(sp.name, tempSpot) )
                 {
-cout << " YES, added" << endl;
                     el = sp;
                     break;
                 }
-cout << " NO" << endl;
             }
-cout << "For " << tempSpot << " add " << el.name << " " << el.csId << endl;
             spotsRemove.push_back(el);
         }
         ++iter;
