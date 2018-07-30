@@ -103,6 +103,22 @@ string CreateSpaces ( string &name )
   return nameWithSpaces;
 }
 
+bool caseInsensitiveStringCompare(const string& str1, const string& str2)
+{
+    if (str1.size() != str2.size()) 
+    {
+        return false;
+    }
+    for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end(); ++c1, ++c2) 
+    {
+        if (tolower(*c1) != tolower(*c2)) 
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void RemoveObjectsExcept( const char *filename, struct SPOT *sp, vector<SPOT> *spotList )
 {
     // load input PDF file
@@ -126,6 +142,7 @@ void RemoveObjectsExcept( const char *filename, struct SPOT *sp, vector<SPOT> *s
 	bool is_need_del = true;
     	bool is_inside_path = false;
         string cur_cs_name = "";
+	bool inside_text = false;
 
     	while( (bReadToken = tokenizer.ReadNext(t, pszKeyword, var)) )
     	{
@@ -146,6 +163,24 @@ void RemoveObjectsExcept( const char *filename, struct SPOT *sp, vector<SPOT> *s
 		    WriteArgumentsAndKeyword(args, pszKeyword, device);
 		    continue;
 		}
+
+		// removing text
+		if (spotList == NULL)
+		{
+		    if ( strcmp(pszKeyword, "BT") == 0 )
+		        inside_text = true;
+		    if (inside_text)
+		    {
+			if ( strcmp(pszKeyword, "ET") == 0 )
+			    inside_text = false;
+
+			pszKeyword = "\0";
+			args.clear();
+			WriteArgumentsAndKeyword(args, pszKeyword, device);
+			continue;
+		    }
+		}
+
 		if ((strcmp(pszKeyword, "cs") == 0) || (strcmp(pszKeyword, "CS") == 0) ||
 			(strcmp(pszKeyword, "scn") == 0) || (strcmp(pszKeyword, "SCN") == 0) ||
 			(strcmp(pszKeyword, "sc") == 0) || (strcmp(pszKeyword, "SC") == 0)
@@ -304,12 +339,16 @@ int main( int argc, char* argv[] )
             // searching
             for ( struct SPOT sp : spotsList )
             {
-                if (sp.name.compare(tempSpot) == 0)
+cout << sp.name << " - " << tempSpot;                
+                if ( caseInsensitiveStringCompare(sp.name, tempSpot) )
                 {
+cout << " YES, added" << endl;
                     el = sp;
                     break;
                 }
+cout << " NO" << endl;
             }
+cout << "For " << tempSpot << " add " << el.name << " " << el.csId << endl;
             spotsRemove.push_back(el);
         }
         ++iter;
